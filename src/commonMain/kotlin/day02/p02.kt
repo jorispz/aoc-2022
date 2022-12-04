@@ -19,9 +19,9 @@ val p02 = suspend {
                 "C", "Z" -> Choice.SCISSOR
                 else -> error("Parse error")
             }
-        }.let { Pair(it[0], it[1]) }
-    }
-    part1.sumOf { score(it) }.print { "Part 1: $it" }
+        }
+    }.map { Round(it[0], it[1]) }
+    part1.sumOf { it.score }.print { "Part 1: $it" }
 
     val part2 = input.split("\n").map { line ->
         line.split(" ").map {
@@ -34,15 +34,16 @@ val p02 = suspend {
                 "Z" -> Result.WIN
                 else -> error("Parse error")
             }
-        }.let { Pair(it[0], it[1]) }
-    }
-    part2.sumOf { score2(it as Pair<Choice, Result>) }.print { "Part 2: $it" }
+        }
+    }.map { Round(it[0] as Choice, it[1] as Result) }
+    part2.sumOf { it.score }.print { "Part 2: $it" }
 }
 
+
 class Round {
-    val attack: Choice
-    val defense: Choice
-    val result: Result
+    private val attack: Choice
+    private val defense: Choice
+    private val result: Result
     val score
         get() = when (result) {
             Result.LOSE -> 0
@@ -61,12 +62,12 @@ class Round {
             Choice.ROCK to Choice.ROCK -> Result.DRAW
             Choice.ROCK to Choice.PAPER -> Result.WIN
             Choice.ROCK to Choice.SCISSOR -> Result.LOSE
-            Choice.PAPER to Choice.ROCK -> Result.DRAW
-            Choice.PAPER to Choice.PAPER -> Result.WIN
-            Choice.PAPER to Choice.SCISSOR -> Result.LOSE
-            Choice.SCISSOR to Choice.ROCK -> Result.DRAW
-            Choice.SCISSOR to Choice.PAPER -> Result.WIN
-            Choice.SCISSOR to Choice.SCISSOR -> Result.LOSE
+            Choice.PAPER to Choice.ROCK -> Result.LOSE
+            Choice.PAPER to Choice.PAPER -> Result.DRAW
+            Choice.PAPER to Choice.SCISSOR -> Result.WIN
+            Choice.SCISSOR to Choice.ROCK -> Result.WIN
+            Choice.SCISSOR to Choice.PAPER -> Result.LOSE
+            Choice.SCISSOR to Choice.SCISSOR -> Result.DRAW
             else -> error("")
         }
     }
@@ -90,30 +91,5 @@ class Round {
 
 }
 
-private fun score2(round: Pair<Choice, Result>): Int = when (round) {
-    Pair(Choice.ROCK, Result.WIN) -> score(Pair(Choice.ROCK, Choice.PAPER))
-    Pair(Choice.ROCK, Result.LOSE) -> score(Pair(Choice.ROCK, Choice.SCISSOR))
-    Pair(Choice.ROCK, Result.DRAW) -> score(Pair(Choice.ROCK, Choice.ROCK))
-    Pair(Choice.PAPER, Result.WIN) -> score(Pair(Choice.PAPER, Choice.SCISSOR))
-    Pair(Choice.PAPER, Result.LOSE) -> score(Pair(Choice.PAPER, Choice.ROCK))
-    Pair(Choice.PAPER, Result.DRAW) -> score(Pair(Choice.PAPER, Choice.PAPER))
-    Pair(Choice.SCISSOR, Result.WIN) -> score(Pair(Choice.SCISSOR, Choice.ROCK))
-    Pair(Choice.SCISSOR, Result.LOSE) -> score(Pair(Choice.SCISSOR, Choice.PAPER))
-    Pair(Choice.SCISSOR, Result.DRAW) -> score(Pair(Choice.SCISSOR, Choice.SCISSOR))
-    else -> error("Can't happen")
-}
-
-private fun score(round: Pair<Choice, Choice>) = when (round) {
-    Pair(Choice.ROCK, Choice.ROCK) -> 1 + 3
-    Pair(Choice.ROCK, Choice.PAPER) -> 2 + 6
-    Pair(Choice.ROCK, Choice.SCISSOR) -> 3 + 0
-    Pair(Choice.PAPER, Choice.ROCK) -> 1 + 0
-    Pair(Choice.PAPER, Choice.PAPER) -> 2 + 3
-    Pair(Choice.PAPER, Choice.SCISSOR) -> 3 + 6
-    Pair(Choice.SCISSOR, Choice.ROCK) -> 1 + 6
-    Pair(Choice.SCISSOR, Choice.PAPER) -> 2 + 0
-    Pair(Choice.SCISSOR, Choice.SCISSOR) -> 3 + 3
-    else -> error("Can't happen")
-}
 
 
