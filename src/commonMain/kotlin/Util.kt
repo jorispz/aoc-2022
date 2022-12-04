@@ -239,6 +239,10 @@ fun <T> Sequence<T>.infinite() = sequence {
 }
 
 fun IntRange.permute() = this.toList().permute()
+fun IntRange.containsFully(other: IntRange) = this.contains(other.first) && this.contains(other.last)
+fun IntRange.overlapsWith(other: IntRange) =
+    this.contains(other.first) || this.contains(other.last) || other.contains(this.first) || other.contains(this.last)
+
 
 fun <T> List<T>.permute(): List<List<T>> {
     if (this.size == 1) return listOf(this)
