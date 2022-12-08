@@ -4,6 +4,16 @@ inline fun <T> T.print(msg: (T) -> Any? = { it }): T = this.apply { println(msg(
 
 fun String.sorted(): String = this.toList().sorted().joinToString()
 
+// Like takeWhile, but includes the item that breaks the predicate
+public inline fun <T> Iterable<T>.takeUntil(predicate: (T) -> Boolean): List<T> {
+    val list = ArrayList<T>()
+    for (item in this) {
+        list.add(item)
+        if (predicate(item))
+            break
+    }
+    return list
+}
 
 fun <T> Sequence<T>.without(element: T): Sequence<T> = this.filter { it != element }
 fun <T> Sequence<T>.pairs(pairWithSelf: Boolean = true, includeMirrors: Boolean = true): Sequence<Pair<T, T>> {
@@ -122,7 +132,7 @@ data class Position(val x: Int, val y: Int) {
 
     fun adjacentTo(other: Position) = distanceTo(other) == 1
 
-    fun closes(a: Position, b: Position): Position {
+    fun closest(a: Position, b: Position): Position {
         val distA = this.distanceTo(a)
         val distB = this.distanceTo(b)
         return if (distB < distA) b else a
