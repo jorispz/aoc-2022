@@ -1,19 +1,10 @@
 import kotlin.math.abs
+import kotlin.math.sign
 
 inline fun <T> T.print(msg: (T) -> Any? = { it }): T = this.apply { println(msg(this)) }
 
 fun String.sorted(): String = this.toList().sorted().joinToString()
 
-// Like takeWhile, but includes the item that breaks the predicate
-public inline fun <T> Iterable<T>.takeUntil(predicate: (T) -> Boolean): List<T> {
-    val list = ArrayList<T>()
-    for (item in this) {
-        list.add(item)
-        if (predicate(item))
-            break
-    }
-    return list
-}
 
 fun <T> Sequence<T>.without(element: T): Sequence<T> = this.filter { it != element }
 fun <T> Sequence<T>.pairs(pairWithSelf: Boolean = true, includeMirrors: Boolean = true): Sequence<Pair<T, T>> {
@@ -86,7 +77,12 @@ fun <T : Comparable<T>> Iterable<T>.maxWithIndex(): IndexedValue<T>? = this.with
 fun <T> MutableSet<T>.takeFirst(): T = this.first().also { remove(it) }
 //fun <T> MutableList<T>.takeFirst(): T = this.first().also { removeAt(0) }
 
-data class Vector(val dx: Int, val dy: Int)
+data class Vector(val dx: Int, val dy: Int) {
+    val sign by lazy {
+        Vector(dx.sign, dy.sign)
+    }
+}
+
 data class Position(val x: Int, val y: Int) {
 
     companion object {
@@ -108,6 +104,7 @@ data class Position(val x: Int, val y: Int) {
 
     fun move(dx: Int = 0, dy: Int = 0) = Position(this.x + dx, this.y + dy)
     operator fun plus(v: Vector) = Position(this.x + v.dx, this.y + v.dy)
+    operator fun minus(other: Position) = Vector(this.x - other.x, this.y - other.y)
 
     fun headingTo(other: Position) = when (other) {
         this.up -> Heading.N
@@ -130,7 +127,8 @@ data class Position(val x: Int, val y: Int) {
 
     fun distanceTo(other: Position) = abs(x - other.x) + abs((y - other.y))
 
-    fun adjacentTo(other: Position) = distanceTo(other) == 1
+    fun adjacentTo(other: Position) = abs(x - other.x) <= 1 && abs(y - other.y) <= 1
+    fun notAdjacentTo(other: Position) = !adjacentTo(other)
 
     fun closest(a: Position, b: Position): Position {
         val distA = this.distanceTo(a)
@@ -141,12 +139,10 @@ data class Position(val x: Int, val y: Int) {
 
 }
 
-class CharMap(input: List<String>, val wrapX: Boolean = false, val wrapY: Boolean = false) {
+class Map2D<T>(input: List<String>, val wrapX: Boolean = false, val wrapY: Boolean = false, convert: (Char) -> T) {
 
-    private var map: Array<CharArray> = Array(input.size) { y ->
-        CharArray(input[y].length) { x ->
-            input[y][x]
-        }
+    private val map: Array<Array<Any?>> = Array(input.size) { y ->
+        (0 until input[y].length).map { convert(input[y][it]) }.toTypedArray()
     }
 
     val height = input.size
@@ -157,19 +153,36 @@ class CharMap(input: List<String>, val wrapX: Boolean = false, val wrapY: Boolea
     val maxY = height - 1
     val maxX by lazy { width - 1 }
 
-
-    fun print() {
+    fun print() = this.also {
         map.forEach { println(it.joinToString("")) }
     }
 
-    operator fun get(x: Int, y: Int): Char {
-        return map[if (wrapY) y.rem(height) else y][if (wrapX) x.rem(width) else x]
+    operator fun get(x: Int, y: Int): T {
+        return map[if (wrapY) y.rem(height) else y][if (wrapX) x.rem(width) else x] as T
     }
 
     operator fun get(p: Position) = this[p.x, p.y]
 
-}
+    fun row(index: Int) = sequence {
+        (0 until width).forEach { yield(get(it, index)) }
+    }
 
+    fun rows(): Sequence<Sequence<T>> = sequence {
+        (0 until height).forEach { yield(row(it)) }
+    }
+
+    fun column(index: Int) = sequence {
+        (0 until height).forEach { yield(get(index, it)) }
+    }
+
+    fun columns(): Sequence<Sequence<T>> = sequence {
+        (0 until width).forEach { yield(column(it)) }
+    }
+
+    fun positions(): Sequence<Position> =
+        sequence { (0 until height).forEach { y -> (0 until width).forEach { x -> yield(Position(x, y)) } } }
+
+}
 
 operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>) = Pair(this.first + other.first, this.second + other.second)
 operator fun Triple<Int, Int, Int>.plus(other: Triple<Int, Int, Int>) =
