@@ -31,7 +31,7 @@ val p10 = suspend {
     output.chunked(40).joinToString("\n") { state ->
         state.joinToString("") {
             val pixelIndex = (it.first - 1) % 40
-            if ((pixelIndex - it.second).absoluteValue <= 1) "#" else "."
+            if ((pixelIndex - it.second).absoluteValue <= 1) "⚫️" else "⚪️"
         }
     }.print { "Part 2: \n\n$it\n" }
 
