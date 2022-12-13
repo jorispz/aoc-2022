@@ -27,8 +27,6 @@ fun <T> shortestPathLengths(origin: T, nodes: Collection<T>, adjacentTo: T.(t: T
 interface Graph<V : Graph.Vertex> {
     interface Vertex
 
-    val zeroDistance: Long
-    val infiniteDistance: Long
     fun heuristicDistance(a: V, b: V): Long
     fun weight(a: V, b: V): Long
 
@@ -40,7 +38,7 @@ fun <V : Graph.Vertex> findShortestPath(graph: Graph<V>, start: V, end: V): List
     val cameFrom = mutableMapOf<V, V>()
     val openVertices = mutableSetOf(start)
     val closedVertices = mutableSetOf<V>()
-    val costFromStart = mutableMapOf(start to graph.zeroDistance)
+    val costFromStart = mutableMapOf(start to 0L)
     val estimatedTotalCost = mutableMapOf(start to graph.heuristicDistance(start, end))
 
     while (openVertices.isNotEmpty()) {
@@ -59,7 +57,7 @@ fun <V : Graph.Vertex> findShortestPath(graph: Graph<V>, start: V, end: V): List
         graph.getNeighbors(currentPos).filterNot { closedVertices.contains(it) }  // Exclude previous visited vertices
             .forEach { neighbour ->
                 val score = costFromStart.getValue(currentPos) + graph.weight(currentPos, neighbour)
-                if (score < costFromStart.getOrElse(neighbour) { graph.infiniteDistance }) {
+                if (score < costFromStart.getOrElse(neighbour) { Long.MAX_VALUE }) {
                     if (!openVertices.contains(neighbour)) {
                         openVertices.add(neighbour)
                     }
@@ -69,5 +67,5 @@ fun <V : Graph.Vertex> findShortestPath(graph: Graph<V>, start: V, end: V): List
                 }
             }
     }
-    error("No path")
+    return emptyList<V>()
 }

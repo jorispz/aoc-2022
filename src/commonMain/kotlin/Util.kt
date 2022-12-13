@@ -83,7 +83,7 @@ data class Vector(val dx: Int, val dy: Int) {
     }
 }
 
-data class Position(val x: Int, val y: Int) {
+data class Position(val x: Int, val y: Int) : Graph.Vertex {
 
     companion object {
         val ORIGIN = Position(0, 0)
@@ -97,8 +97,8 @@ data class Position(val x: Int, val y: Int) {
     val down_left by lazy { Position(x - 1, y + 1) }
     val left by lazy { Position(x - 1, y) }
     val up_left by lazy { Position(x - 1, y - 1) }
-    val adjacent by lazy { listOf(left, up, right, down) }
-    val adjacentWithDiagonals by lazy { listOf(left, up_left, up, up_right, right, down_right, down, down_left) }
+    val adjacent by lazy { setOf(left, up, right, down) }
+    val adjacentWithDiagonals by lazy { setOf(left, up_left, up, up_right, right, down_right, down, down_left) }
 
     fun move(dx: Int = 0, dy: Int = 0) = Position(this.x + dx, this.y + dy)
     operator fun plus(v: Vector) = Position(this.x + v.dx, this.y + v.dy)
@@ -189,12 +189,17 @@ class Map2D<T>(
     fun positions(): Sequence<Position> =
         sequence { (0 until height).forEach { y -> (0 until width).forEach { x -> yield(Position(x, y)) } } }
 
-    fun neighbors(p: Position, includeDiagonals: Boolean = false): List<Position> {
+    fun neighbors(p: Position, includeDiagonals: Boolean = false): Set<Position> {
         val adjacent = if (includeDiagonals) p.adjacentWithDiagonals else p.adjacent
-        return adjacent.filter { this.contains(it) }
+        return adjacent.filterTo(HashSet()) { this.contains(it) }
     }
 
+    fun find(value: T) = this.positions().filter { this[it] == value }.toSet()
+
 }
+
+
+
 
 operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>) = Pair(this.first + other.first, this.second + other.second)
 operator fun Triple<Int, Int, Int>.plus(other: Triple<Int, Int, Int>) =
