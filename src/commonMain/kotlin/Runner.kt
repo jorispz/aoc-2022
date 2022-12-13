@@ -8,12 +8,14 @@ import day08.p08
 import day09.p09
 import day1.p01
 import day10.p10
+import day11.p11
+import day12.p012
 import kotlin.math.sqrt
 
 
 suspend fun run(repeat: Int, day: Int, platform: String) {
     println("Running day $day $repeat times on platform $platform")
-    val puzzles = listOf(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10)
+    val puzzles = listOf(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p012)
     val times = (1..repeat).map {
         measureNanos {
             val p = puzzles[day - 1]

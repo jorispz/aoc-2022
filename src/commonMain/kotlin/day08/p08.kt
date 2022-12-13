@@ -8,7 +8,7 @@ data class Tree(val x: Int, val y: Int, val height: Int, var visible: Boolean)
 
 val p08 = suspend {
     val input = readInput("08.txt").lines()
-    val map = Map2D(input) { it.digitToInt() }
+    val map = Map2D(input) { c, _ -> c.digitToInt() }
 
     map.positions().count { p ->
         if (p.x == 0 || p.x == map.maxX || p.y == 0 || p.y == map.maxY) {

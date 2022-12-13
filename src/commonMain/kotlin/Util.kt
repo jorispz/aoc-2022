@@ -89,18 +89,16 @@ data class Position(val x: Int, val y: Int) {
         val ORIGIN = Position(0, 0)
     }
 
-    val left by lazy {
-        Position(x - 1, y)
-    }
-    val right by lazy {
-        Position(x + 1, y)
-    }
-    val up by lazy {
-        Position(x, y - 1)
-    }
-    val down by lazy {
-        Position(x, y + 1)
-    }
+    val up by lazy { Position(x, y - 1) }
+    val up_right by lazy { Position(x + 1, y - 1) }
+    val right by lazy { Position(x + 1, y) }
+    val down_right by lazy { Position(x + 1, y + 1) }
+    val down by lazy { Position(x, y + 1) }
+    val down_left by lazy { Position(x - 1, y + 1) }
+    val left by lazy { Position(x - 1, y) }
+    val up_left by lazy { Position(x - 1, y - 1) }
+    val adjacent by lazy { listOf(left, up, right, down) }
+    val adjacentWithDiagonals by lazy { listOf(left, up_left, up, up_right, right, down_right, down, down_left) }
 
     fun move(dx: Int = 0, dy: Int = 0) = Position(this.x + dx, this.y + dy)
     operator fun plus(v: Vector) = Position(this.x + v.dx, this.y + v.dy)
@@ -123,8 +121,6 @@ data class Position(val x: Int, val y: Int) {
         Heading.E -> right
     }
 
-    fun adjacents(): List<Position> = listOf(left, up, right, down)
-
     fun distanceTo(other: Position) = abs(x - other.x) + abs((y - other.y))
 
     fun adjacentTo(other: Position) = abs(x - other.x) <= 1 && abs(y - other.y) <= 1
@@ -139,10 +135,15 @@ data class Position(val x: Int, val y: Int) {
 
 }
 
-class Map2D<T>(input: List<String>, val wrapX: Boolean = false, val wrapY: Boolean = false, convert: (Char) -> T) {
+class Map2D<T>(
+    input: List<String>,
+    val wrapX: Boolean = false,
+    val wrapY: Boolean = false,
+    convert: (Char, Position) -> T
+) {
 
     private val map: Array<Array<Any?>> = Array(input.size) { y ->
-        (0 until input[y].length).map { convert(input[y][it]) }.toTypedArray()
+        (0 until input[y].length).map { convert(input[y][it], Position(it, y)) }.toTypedArray()
     }
 
     val height = input.size
@@ -155,6 +156,12 @@ class Map2D<T>(input: List<String>, val wrapX: Boolean = false, val wrapY: Boole
 
     fun print() = this.also {
         map.forEach { println(it.joinToString("")) }
+    }
+
+    fun contains(p: Position): Boolean {
+        val containsX = wrapX || p.x in (0..maxX)
+        val containsY = wrapY || p.y in (0..maxY)
+        return containsX && containsY
     }
 
     operator fun get(x: Int, y: Int): T {
@@ -181,6 +188,11 @@ class Map2D<T>(input: List<String>, val wrapX: Boolean = false, val wrapY: Boole
 
     fun positions(): Sequence<Position> =
         sequence { (0 until height).forEach { y -> (0 until width).forEach { x -> yield(Position(x, y)) } } }
+
+    fun neighbors(p: Position, includeDiagonals: Boolean = false): List<Position> {
+        val adjacent = if (includeDiagonals) p.adjacentWithDiagonals else p.adjacent
+        return adjacent.filter { this.contains(it) }
+    }
 
 }
 

@@ -24,3 +24,50 @@ fun <T> shortestPathLengths(origin: T, nodes: Collection<T>, adjacentTo: T.(t: T
     return shortest.map { Pair(it.node, it.distance) }
 }
 
+interface Graph<V : Graph.Vertex> {
+    interface Vertex
+
+    val zeroDistance: Long
+    val infiniteDistance: Long
+    fun heuristicDistance(a: V, b: V): Long
+    fun weight(a: V, b: V): Long
+
+    fun getNeighbors(v: V): Set<V>
+}
+
+fun <V : Graph.Vertex> findShortestPath(graph: Graph<V>, start: V, end: V): List<V> {
+
+    val cameFrom = mutableMapOf<V, V>()
+    val openVertices = mutableSetOf(start)
+    val closedVertices = mutableSetOf<V>()
+    val costFromStart = mutableMapOf(start to graph.zeroDistance)
+    val estimatedTotalCost = mutableMapOf(start to graph.heuristicDistance(start, end))
+
+    while (openVertices.isNotEmpty()) {
+        val currentPos = openVertices.minBy { estimatedTotalCost.getValue(it) }
+        if (currentPos == end) {
+            val path = mutableListOf(currentPos)
+            var current = currentPos
+            while (cameFrom.containsKey(current)) {
+                current = cameFrom.getValue(current)
+                path.add(0, current)
+            }
+            return path.toList()
+        }
+        openVertices.remove(currentPos)
+        closedVertices.add(currentPos)
+        graph.getNeighbors(currentPos).filterNot { closedVertices.contains(it) }  // Exclude previous visited vertices
+            .forEach { neighbour ->
+                val score = costFromStart.getValue(currentPos) + graph.weight(currentPos, neighbour)
+                if (score < costFromStart.getOrElse(neighbour) { graph.infiniteDistance }) {
+                    if (!openVertices.contains(neighbour)) {
+                        openVertices.add(neighbour)
+                    }
+                    cameFrom.put(neighbour, currentPos)
+                    costFromStart[neighbour] = score
+                    estimatedTotalCost[neighbour] = score + graph.heuristicDistance(neighbour, end)
+                }
+            }
+    }
+    error("No path")
+}
