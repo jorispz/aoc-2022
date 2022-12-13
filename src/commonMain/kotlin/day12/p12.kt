@@ -7,7 +7,7 @@ import findShortestPath
 import print
 import readInput
 
-val p012 = suspend {
+val p12 = suspend {
     val input = readInput("12.txt").lines()
     val goals = Array(2) { Position(0, 0) }
     val map = Map2D(input) { c, p ->
