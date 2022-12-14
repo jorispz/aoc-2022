@@ -8,15 +8,20 @@ enum class Type { AIR, ROCK, SAND }
 
 val p14 = suspend {
     val input = readInput("14.txt").lines()
-    val rocks = input.map { line ->
+    val rocks = input
         // Maps to a list of Positions, one for each x,y pair
-        line.split(" -> ")
-            .map { pair -> pair.split(",").map { coordinate -> coordinate.toInt() }.let { Position(it[0], it[1]) } }
-    }.flatMap {
-        it.windowed(2, 1).flatMap { (from, to) ->
-            (from.x interpolate to.x).flatMap { x -> (from.y interpolate to.y).map { y -> Position(x, y) } }
+        .map { line ->
+            line.split(" -> ")
+                .map { pair -> pair.split(",").map { coordinate -> coordinate.toInt() }.let { Position(it[0], it[1]) } }
         }
-    }.distinct().print()
+        // Add all intermediate positions between line segments and make it a single list
+        .flatMap {
+            it.windowed(2, 1).flatMap { (from, to) ->
+                (from.x interpolate to.x).flatMap { x -> (from.y interpolate to.y).map { y -> Position(x, y) } }
+            }
+        }
+        // Delete the duplicates, because the end of line 1 and the start of line 2 is the same position
+        .distinct()
 
     val maxY = rocks.maxOf { it.y }
     val sands = mutableListOf<Position>()
