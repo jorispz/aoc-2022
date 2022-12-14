@@ -1,6 +1,5 @@
 package day14
 
-import Map2D
 import Position
 import print
 import readInput
@@ -70,8 +69,6 @@ fun draw(rocks: List<Position>, sand: List<Position>) {
             if (rocks.contains(pos)) '#' else if (sand.contains(pos)) 'o' else '.'
         }.joinToString("")
     }
-
-    val map = Map2D(mapString) { c, _ -> c }.print()
 }
 
 
