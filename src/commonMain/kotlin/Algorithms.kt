@@ -33,6 +33,13 @@ interface Graph<V : Graph.Vertex> {
     fun getNeighbors(v: V): Set<V>
 }
 
+
+/*
+This implements the A* algorithm to find the shortest route in a graph of vertices with weighted edges. Note that
+this becomes Dijkstra's algorithm when the heuristic function is set to constant 0
+
+Hasn't been properly tested accept for AoC 2022 Day 12, which is Dijkstra
+ */
 fun <V : Graph.Vertex> findShortestPath(graph: Graph<V>, start: V, end: V): List<V> {
 
     val cameFrom = mutableMapOf<V, V>()
