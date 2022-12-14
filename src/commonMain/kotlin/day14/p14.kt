@@ -18,9 +18,7 @@ val p14 = suspend {
             (from.x interpolate to.x).flatMap { x -> (from.y interpolate to.y).map { y -> Position(x, y) } }
         }
     }.distinct().print()
-    val minX = rocks.minOf { it.x }
-    val maxX = rocks.maxOf { it.x }
-    val minY = rocks.minOf { it.y }
+
     val maxY = rocks.maxOf { it.y }
     val sands = mutableListOf<Position>()
 
